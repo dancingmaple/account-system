@@ -1,6 +1,6 @@
 package com.xx.account.auth.infrastructure;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,35 +15,30 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring Security 配置
+ * Spring Security Configuration
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-
-    @Autowired
-    public SecurityConfig(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF 禁用 (API 使用 Token)
             .csrf(AbstractHttpConfigurer::disable)
-            // 请求授权
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/validate", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/api/auth/login", "/api/auth/register", "/api/auth/validate", "/api/auth/refresh", "/api/auth/logout", "/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui.css", "/swagger-ui-bundle.js", "/swagger-ui-standalone-preset.js", "/swagger-initializer.js", "/favicon-32x32.png", "/favicon-16x16.png", "/webjars/**", "/doc.html", "/actuator/**").permitAll()
                 .anyRequest().authenticated()
             )
-            // 状态less
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // 认证提供者
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authenticationProvider(authenticationProvider());
 
         return http.build();

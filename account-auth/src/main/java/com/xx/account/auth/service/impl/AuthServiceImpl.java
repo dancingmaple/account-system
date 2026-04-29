@@ -176,6 +176,7 @@ public class AuthServiceImpl implements AuthService {
                 "admin@example.com",
                 "13800138000",
                 "管理员",
+                null,
                 1L,
                 Constants.DATA_SCOPE_ALL,
                 java.util.List.of(),

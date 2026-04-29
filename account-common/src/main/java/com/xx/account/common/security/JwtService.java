@@ -2,9 +2,12 @@ package com.xx.account.common.security;
 
 import com.xx.account.common.core.BusinessException;
 import com.xx.account.common.core.ResultCode;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +35,7 @@ public class JwtService {
     private long refreshExpiration; // 秒
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes = secretKey.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -55,12 +58,12 @@ public class JwtService {
         Date expiryDate = new Date(now.getTime() + expirationSeconds * 1000);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setId(java.util.UUID.randomUUID().toString())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .claims(claims)
+                .subject(subject)
+                .id(java.util.UUID.randomUUID().toString())
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey(), Jwts.SIG.HS512)
                 .compact();
     }
 
@@ -69,14 +72,14 @@ public class JwtService {
      */
     public Claims parseToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
             throw new BusinessException(ResultCode.TOKEN_EXPIRED);
-        } catch (UnsupportedJwtException | MalformedJwtException e) {
+        } catch (SignatureException | MalformedJwtException e) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);

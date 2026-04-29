@@ -24,6 +24,7 @@ public class LoginUser implements UserDetails {
     private final String email;
     private final String phone;
     private final String nickname;
+    private final String avatar;
     private final Long deptId;
     private final Integer dataScope;
     private final List<Long> customDeptIds;
@@ -33,14 +34,15 @@ public class LoginUser implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
 
     public LoginUser(Long userId, String username, String password, String email, String phone,
-                     String nickname, Long deptId, Integer dataScope, List<Long> customDeptIds,
-                     Boolean isAdmin, List<String> roles, List<String> permissions) {
+            String nickname, String avatar, Long deptId, Integer dataScope, List<Long> customDeptIds,
+            Boolean isAdmin, List<String> roles, List<String> permissions) {
         this.userId = userId;
         this.username = username;
         this.password = password;
         this.email = email;
         this.phone = phone;
         this.nickname = nickname;
+        this.avatar = avatar;
         this.deptId = deptId;
         this.dataScope = dataScope;
         this.customDeptIds = customDeptIds;

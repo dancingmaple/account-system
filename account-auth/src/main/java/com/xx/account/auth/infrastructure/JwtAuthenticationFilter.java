@@ -118,7 +118,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 userId,
                 claims.getSubject(),
                 null, // password 不需要
-                null, null, null,
+                null, null, null, null,
                 deptId,
                 dataScope,
                 List.of(),

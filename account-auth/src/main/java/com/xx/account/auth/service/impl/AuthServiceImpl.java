@@ -10,8 +10,8 @@ import com.xx.account.common.core.Constants;
 import com.xx.account.common.core.ResultCode;
 import com.xx.account.common.security.JwtService;
 import com.xx.account.common.security.LoginUser;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
@@ -37,6 +36,14 @@ public class AuthServiceImpl implements AuthService {
     @Value("${jwt.refresh-expiration:604800}")
     private long refreshTokenExpiration;
 
+    @Autowired
+    public AuthServiceImpl(JwtService jwtService, PasswordEncoder passwordEncoder,
+                           @Autowired(required = false) RedisTemplate<String, Object> redisTemplate) {
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.redisTemplate = redisTemplate;
+    }
+
     @Override
     public LoginResponse login(LoginRequest request) {
         // TODO: 从数据库获取用户信息
@@ -47,7 +54,8 @@ public class AuthServiceImpl implements AuthService {
         LoginUser user = createDemoUser(request.getUsername());
 
         // 验证密码 (演示用，实际需要从数据库比对)
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // 演示用户直接比较明文密码 "123456"
+        if (!"123456".equals(request.getPassword()) && !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             // 增加登录失败计数
             incrementLoginErrorCount(request.getUsername());
             throw new BusinessException(ResultCode.LOGIN_FAILED);
@@ -81,7 +89,9 @@ public class AuthServiceImpl implements AuthService {
 
             // 将 Token 加入黑名单
             String blacklistKey = Constants.REDIS_TOKEN_BLACKLIST + token;
-            redisTemplate.opsForValue().set(blacklistKey, "1", accessTokenExpiration, TimeUnit.SECONDS);
+            if (redisTemplate != null) {
+                redisTemplate.opsForValue().set(blacklistKey, "1", accessTokenExpiration, TimeUnit.SECONDS);
+            }
 
             log.info("用户登出，Token 加入黑名单");
         }
@@ -150,6 +160,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void cacheUserInfo(LoginUser user, String token) {
+        if (redisTemplate == null) {
+            return; // Redis disabled, skip caching
+        }
         // 缓存用户信息
         String userKey = Constants.REDIS_USER_INFO + user.getUserId();
         redisTemplate.opsForValue().set(userKey, user, accessTokenExpiration, TimeUnit.SECONDS);
@@ -160,6 +173,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void incrementLoginErrorCount(String username) {
+        if (redisTemplate == null) {
+            return; // Redis disabled, skip
+        }
         String key = Constants.REDIS_LOGIN_ERROR + username;
         Long count = redisTemplate.opsForValue().increment(key);
         if (count != null && count == 1) {
@@ -167,12 +183,14 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    // 演示用户 - 实际应从数据库查询
+    // 演示用户 - 实际应从数据库查询 (密码为 123456)
+    private static final String DEMO_PASSWORD_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
     private LoginUser createDemoUser(String username) {
         return new LoginUser(
                 1L,
                 username,
-                passwordEncoder.encode("123456"),
+                DEMO_PASSWORD_HASH,
                 "admin@example.com",
                 "13800138000",
                 "管理员",

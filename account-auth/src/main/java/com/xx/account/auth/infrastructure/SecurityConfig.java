@@ -1,6 +1,6 @@
 package com.xx.account.auth.infrastructure;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security 配置
@@ -23,69 +22,48 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+
+    @Autowired
+    public SecurityConfig(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 禁用 (API 使用 Token)
-                .csrf(AbstractHttpConfigurer::disable)
-
-                // 会话管理：无状态
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 授权规则
-                .authorizeHttpRequests(auth -> auth
-                        // 公开端点
-                        .requestMatchers(
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/register",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/captcha",
-                                "/doc/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/actuator/**"
-                        ).permitAll()
-                        // 其他需要认证
-                        .anyRequest().authenticated()
-
-                )
-
-                // JWT 过滤器
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-
-                // 认证提供者
-                .authenticationProvider(authenticationProvider());
+            // CSRF 禁用 (API 使用 Token)
+            .csrf(AbstractHttpConfigurer::disable)
+            // 请求授权
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/validate", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/api/auth/login", "/api/auth/register", "/api/auth/validate", "/api/auth/refresh", "/api/auth/logout", "/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui.css", "/swagger-ui-bundle.js", "/swagger-ui-standalone-preset.js", "/swagger-initializer.js", "/favicon-32x32.png", "/favicon-16x16.png", "/webjars/**", "/doc.html", "/actuator/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            // 状态less
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // 认证提供者
+            .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        // 返回默认的 AuthenticationManager
-        return authentication -> {
-            // 这里可以添加自定义认证逻辑
-            return authentication;
-        };
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

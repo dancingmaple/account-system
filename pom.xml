@@ -20,6 +20,7 @@
         <module>account-permission</module>
         <module>account-openapi</module>
         <module>account-audit</module>
+<module>account-service</module>
     </modules>
 
     <properties>
@@ -183,6 +184,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.xx.account.AccountApplication</mainClass>
+<skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>

@@ -8,31 +8,21 @@ spring:
     name: account-system
 
   profiles:
-    active: dev
+    active: sqlite
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/account_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: ${DB_PASSWORD:root123}
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:account_system.db
+    username:
+    password:
     hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 300000
-      max-lifetime: 1800000
-      connection-timeout: 30000
+      maximum-pool-size: 1
+      minimum-idle: 1
 
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    database: 0
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
+  # Redis - 默认禁用
+  data:
+    redis:
+      enabled: false
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -40,11 +30,16 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  # 禁用 Redis 健康检查
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
 # JWT 配置
 jwt:
-  secret: ${JWT_SECRET:account-system-secret-key-must-be-at-least-32-characters-long-for-hs512}
-  expiration: 7200  # Token 有效期 (秒),默认 2 小时
-  refresh-expiration: 604800  # Refresh Token 有效期 (秒),默认 7 天
+  secret: account-system-secret-key-must-be-at-least-32-characters-long-for-hs512
+  expiration: 7200 # Token 有效期 (秒),默认 2 小时
+  refresh-expiration: 604800 # Refresh Token 有效期 (秒),默认 7 天
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -73,7 +68,7 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
-    swagger-model-name: 实体类列表
+  swagger-model-name: 实体类列表
 
 # 日志配置
 logging:
@@ -83,11 +78,6 @@ logging:
     org.springframework.security: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-  file:
-    name: logs/account-system.log
-    max-size: 100MB
-    max-history: 30
 
 # Actuator 配置
 management:
@@ -98,9 +88,6 @@ management:
   endpoint:
     health:
       show-details: when_authorized
-  health:
-    redis:
-      enabled: true
 
 # 密码策略
 password:
@@ -115,8 +102,8 @@ password:
 # 安全配置
 security:
   login:
-    max-retry: 5  # 最大登录失败次数
-    lock-minutes: 30  # 锁定时间 (分钟)
+    max-retry: 5 # 最大登录失败次数
+    lock-minutes: 30 # 锁定时间 (分钟)
   captcha:
-    enabled: true  # 是否启用验证码
-    expire-seconds: 300  # 验证码过期时间 (秒)
+    enabled: false # 禁用验证码
+    expire-seconds: 300 # 验证码过期时间 (秒)

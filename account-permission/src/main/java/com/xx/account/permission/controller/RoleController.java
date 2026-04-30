@@ -33,7 +33,7 @@ public class RoleController {
     @GetMapping("/{id}")
     @Operation(summary = "获取角色详情")
     @PreAuthorize("hasAuthority('role:info') or hasRole('admin')")
-    public R<RoleDto> get(@PathVariable Long id) {
+    public R<RoleDto> get(@PathVariable("id") Long id) {
         return R.ok(permissionService.getRole(id));
     }
 
@@ -47,7 +47,7 @@ public class RoleController {
     @PutMapping("/{id}")
     @Operation(summary = "更新角色")
     @PreAuthorize("hasAuthority('role:edit') or hasRole('admin')")
-    public R<Void> update(@PathVariable Long id, @Valid @RequestBody RoleDto roleDto) {
+    public R<Void> update(@PathVariable("id") Long id, @Valid @RequestBody RoleDto roleDto) {
         roleDto.setId(id);
         permissionService.updateRole(roleDto);
         return R.ok();
@@ -56,7 +56,7 @@ public class RoleController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除角色")
     @PreAuthorize("hasAuthority('role:delete') or hasRole('admin')")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         permissionService.deleteRole(id);
         return R.ok();
     }
@@ -64,7 +64,7 @@ public class RoleController {
     @PutMapping("/{id}/menus")
     @Operation(summary = "分配菜单权限")
     @PreAuthorize("hasRole('admin')")
-    public R<Void> assignMenus(@PathVariable Long id, @RequestBody List<Long> menuIds) {
+    public R<Void> assignMenus(@PathVariable("id") Long id, @RequestBody List<Long> menuIds) {
         permissionService.assignMenus(id, menuIds);
         return R.ok();
     }
@@ -72,7 +72,7 @@ public class RoleController {
     @PutMapping("/{id}/data-scope")
     @Operation(summary = "分配数据范围")
     @PreAuthorize("hasRole('admin')")
-    public R<Void> assignDataScope(@PathVariable Long id,
+    public R<Void> assignDataScope(@PathVariable("id") Long id,
                                     @RequestParam Integer dataScope,
                                     @RequestBody(required = false) List<Long> deptIds) {
         permissionService.assignDataScope(id, dataScope, deptIds);

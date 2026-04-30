@@ -35,7 +35,7 @@ public class UserController {
     @GetMapping("/{id}")
     @Operation(summary = "获取用户详情")
     @PreAuthorize("hasAuthority('user:info') or hasRole('admin')")
-    public R<UserDto> get(@PathVariable Long id) {
+    public R<UserDto> get(@PathVariable("id") Long id) {
         return R.ok(userService.getUserInfo(id));
     }
 
@@ -50,7 +50,7 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "更新用户")
     @PreAuthorize("hasAuthority('user:edit') or hasRole('admin')")
-    public R<Void> update(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
+    public R<Void> update(@PathVariable("id") Long id, @Valid @RequestBody UserDto userDto) {
         userDto.setId(id);
         userService.updateUser(userDto);
         return R.ok();
@@ -59,7 +59,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除用户")
     @PreAuthorize("hasAuthority('user:delete') or hasRole('admin')")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return R.ok();
     }
@@ -67,7 +67,7 @@ public class UserController {
     @PutMapping("/{id}/roles")
     @Operation(summary = "分配角色")
     @PreAuthorize("hasRole('admin')")
-    public R<Void> assignRoles(@PathVariable Long id, @RequestBody List<Long> roleIds) {
+    public R<Void> assignRoles(@PathVariable("id") Long id, @RequestBody List<Long> roleIds) {
         userService.assignRoles(id, roleIds);
         return R.ok();
     }
@@ -75,7 +75,7 @@ public class UserController {
     @PostMapping("/{id}/reset-password")
     @Operation(summary = "重置密码")
     @PreAuthorize("hasRole('admin')")
-    public R<Void> resetPassword(@PathVariable Long id, @RequestParam String newPassword) {
+    public R<Void> resetPassword(@PathVariable("id") Long id, @RequestParam String newPassword) {
         userService.resetPassword(id, newPassword);
         return R.ok();
     }

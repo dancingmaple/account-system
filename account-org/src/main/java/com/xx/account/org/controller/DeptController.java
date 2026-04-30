@@ -33,7 +33,7 @@ public class DeptController {
     @GetMapping("/{id}")
     @Operation(summary = "获取部门详情")
     @PreAuthorize("hasAuthority('dept:info') or hasRole('admin')")
-    public R<DeptDto> get(@PathVariable Long id) {
+    public R<DeptDto> get(@PathVariable("id") Long id) {
         return R.ok(deptService.getById(id));
     }
 
@@ -47,7 +47,7 @@ public class DeptController {
     @PutMapping("/{id}")
     @Operation(summary = "更新部门")
     @PreAuthorize("hasAuthority('dept:edit') or hasRole('admin')")
-    public R<Void> update(@PathVariable Long id, @Valid @RequestBody DeptDto deptDto) {
+    public R<Void> update(@PathVariable("id") Long id, @Valid @RequestBody DeptDto deptDto) {
         deptDto.setId(id);
         deptService.updateDept(deptDto);
         return R.ok();
@@ -56,7 +56,7 @@ public class DeptController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除部门")
     @PreAuthorize("hasAuthority('dept:delete') or hasRole('admin')")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         deptService.deleteDept(id);
         return R.ok();
     }

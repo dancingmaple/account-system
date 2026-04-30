@@ -48,7 +48,7 @@ public class MenuController {
     @GetMapping("/{id}")
     @Operation(summary = "获取菜单详情")
     @PreAuthorize("hasAuthority('menu:info') or hasRole('admin')")
-    public R<MenuDto> get(@PathVariable Long id) {
+    public R<MenuDto> get(@PathVariable("id") Long id) {
         return R.ok(permissionService.getMenu(id));
     }
 
@@ -62,7 +62,7 @@ public class MenuController {
     @PutMapping("/{id}")
     @Operation(summary = "更新菜单")
     @PreAuthorize("hasAuthority('menu:edit') or hasRole('admin')")
-    public R<Void> update(@PathVariable Long id, @Valid @RequestBody MenuDto menuDto) {
+    public R<Void> update(@PathVariable("id") Long id, @Valid @RequestBody MenuDto menuDto) {
         menuDto.setId(id);
         permissionService.updateMenu(menuDto);
         return R.ok();
@@ -71,7 +71,7 @@ public class MenuController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除菜单")
     @PreAuthorize("hasAuthority('menu:delete') or hasRole('admin')")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         permissionService.deleteMenu(id);
         return R.ok();
     }

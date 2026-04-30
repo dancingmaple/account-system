@@ -30,6 +30,13 @@ public class DeptController {
         return R.ok(deptService.getDeptTree());
     }
 
+    @GetMapping("/tree")
+    @Operation(summary = "获取部门树")
+    @PreAuthorize("hasAuthority('dept:list') or hasRole('admin')")
+    public R<List<DeptDto>> tree2() {
+        return R.ok(deptService.getDeptTree());
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "获取部门详情")
     @PreAuthorize("hasAuthority('dept:info') or hasRole('admin')")

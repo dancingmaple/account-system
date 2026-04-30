@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getDeptList(params) {
   return request({
-    url: '/v1/depts/tree',
+    url: '/v1/depts',
     method: 'get',
     params
   })
@@ -10,7 +10,7 @@ export function getDeptList(params) {
 
 export function getDeptTree() {
   return request({
-    url: '/v1/depts/tree',
+    url: '/v1/depts',
     method: 'get'
   })
 }

@@ -1,0 +1,115 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: account-service
+
+  # SQLite 数据源配置
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:account_system.db
+    username:
+    password:
+    hikari:
+      maximum-pool-size: 1
+      minimum-idle: 1
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+  # 禁用 Redis
+  data:
+    redis:
+      enabled: false
+
+  # 禁用 Redis 自动配置
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+
+# JWT 配置
+jwt:
+  secret: account-system-secret-key-must-be-at-least-32-characters-long-for-hs512
+  expiration: 7200
+  refresh-expiration: 604800
+
+# MyBatis Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.xx.account.*.domain
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+
+# Knife4j/Swagger 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    url: /v3/api-docs
+    operationsSorter: alpha
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  resources:
+    chain:
+      enabled: true
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+  additional-mappings:
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /webjars/**
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.xx.account: debug
+
+# Actuator 配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# 密码策略
+password:
+  min-length: 8
+  require-uppercase: true
+  require-lowercase: true
+  require-digit: true
+  require-special: false
+  expire-days: 90
+
+# 安全配置
+security:
+  login:
+    max-retry: 5
+    lock-minutes: 30
+  captcha:
+    enabled: false

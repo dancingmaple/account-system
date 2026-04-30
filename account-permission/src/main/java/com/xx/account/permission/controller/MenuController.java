@@ -24,6 +24,13 @@ public class MenuController {
 
     private final PermissionService permissionService;
 
+    @GetMapping
+    @Operation(summary = "获取菜单列表")
+    @PreAuthorize("hasAuthority('menu:list') or hasRole('admin')")
+    public R<List<MenuDto>> list() {
+        return R.ok(permissionService.getMenuTree());
+    }
+
     @GetMapping("/tree")
     @Operation(summary = "获取菜单树")
     @PreAuthorize("hasAuthority('menu:list') or hasRole('admin')")

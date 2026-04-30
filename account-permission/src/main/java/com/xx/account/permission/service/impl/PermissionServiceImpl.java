@@ -14,6 +14,7 @@ import com.xx.account.permission.dto.MenuDto;
 import com.xx.account.permission.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@Primary
 @RequiredArgsConstructor
 public class PermissionServiceImpl implements PermissionService {
 

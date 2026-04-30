@@ -19,8 +19,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * JWT 认证过滤器（无 Redis 依赖版本）
@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         String token = extractToken(request);
 
@@ -48,13 +48,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 LoginUser user = createUserFromClaims(claims);
 
                 if (user != null) {
-                    // 设置认证信息
-                    List<SimpleGrantedAuthority> authorities = user.getPermissions().stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
+                    // 设置认证信息 - 同时包含权限和角色
+                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                    // 添加权限
+                    user.getPermissions().forEach(p -> authorities.add(new SimpleGrantedAuthority(p)));
+                    // 添加角色 (Spring Security 使用 ROLE_ 前缀)
+                    user.getRoles().forEach(r -> authorities.add(new SimpleGrantedAuthority("ROLE_" + r)));
+                    // 如果是管理员，添加所有权限
+                    if (user.getIsAdmin()) {
+                        authorities.add(new SimpleGrantedAuthority("*:*:*"));
+                    }
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null, authorities);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            user, null, authorities);
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -91,8 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return new LoginUser(
                 userId,
                 claims.getSubject(),
-                null,
-                null, null, null, null,
+                null, null, null, null, null,
                 deptId,
                 dataScope,
                 List.of(),

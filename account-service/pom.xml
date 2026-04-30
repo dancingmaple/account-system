@@ -35,6 +35,26 @@
             <artifactId>account-auth</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.xx.account</groupId>
+            <artifactId>account-user</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xx.account</groupId>
+            <artifactId>account-org</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xx.account</groupId>
+            <artifactId>account-permission</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xx.account</groupId>
+            <artifactId>account-openapi</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
 
         <!-- Spring Boot Starters -->
         <dependency>
